@@ -372,20 +372,18 @@ function toggle(g, id) {
 function find(gid, id) { return groups.find(g => g.id === gid).items.find(it => it[0] === id); }
 function levelOf(points) {
   if (points <= 0) return 0;
-  if (points <= 8) return 1;
-  if (points <= 14) return 2;
-  if (points <= 22) return 3;
-  if (points <= 28) return 4;
-  if (points <= 34) return 5;
-  if (points <= 40) return 6;
-  if (points <= 46) return 7;
-  if (points <= 52) return 8;
+  if (points <= 3) return 1;
+  if (points <= 8) return 2;
+  if (points <= 14) return 3;
+  if (points <= 20) return 4;
+  if (points <= 26) return 5;
+  if (points <= 32) return 6;
+  if (points <= 38) return 7;
+  if (points <= 44) return 8;
   return 9;
 }
 function ownLevel(points) {
-  const raw = levelOf(points);
-  if (!raw) return 0;
-  return Math.min(9, raw + 4);
+  return levelOf(points);
 }
 function render() {
   const blade = state.shape === "Клинок";
