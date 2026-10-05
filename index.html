@@ -2,10 +2,594 @@
 <html lang="ru">
 <head>
 <meta charset="UTF-8">
-<meta http-equiv="refresh" content="0; url=Runicheskiy_kompilyator.html">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Рунические печати</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="pechati_icon_180.png">
+<link rel="apple-touch-icon" href="pechati_icon_180.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Печати">
+<meta name="theme-color" content="#05070b">
+<meta property="og:title" content="Рунические печати">
+<meta property="og:description" content="Станок для своих формул.">
+<meta property="og:image" content="public/og.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<style>
+  :root { --ink:#e8f6ff; --muted:#7f9bb8; --gold:#3ecbff; --wine:#ff8fb8; --bg:#05070b; --line:rgba(62,203,255,.38); }
+  * { box-sizing:border-box; }
+  body { margin:0; font-family:Palatino,"Palatino Linotype",Georgia,serif; color:var(--ink); background:radial-gradient(800px 380px at 50% -10%, rgba(62,203,255,.18), transparent 60%), radial-gradient(600px 420px at 100% 100%, rgba(20,80,160,.2), transparent 55%), var(--bg); }
+  body:before { content:""; pointer-events:none; position:fixed; inset:10px; border:1px solid var(--line); border-radius:18px; box-shadow:inset 0 0 40px rgba(62,203,255,.05); }
+  header { padding:34px 22px 8px; text-align:center; }
+  .mark { color:var(--gold); letter-spacing:.4em; font-size:12px; text-shadow:0 0 12px rgba(62,203,255,.7); }
+  h1 { margin:8px 0 0; font-weight:500; letter-spacing:.18em; font-size:26px; color:var(--gold); text-shadow:0 0 18px rgba(62,203,255,.45); }
+  header p { max-width:640px; margin:10px auto 0; color:var(--muted); line-height:1.45; }
+  main { max-width:1120px; margin:0 auto; padding:18px 16px 56px; display:grid; gap:16px; }
+  @media (min-width:920px) { main { grid-template-columns:1.45fr .8fr; align-items:start; } }
+  section, aside { background:rgba(8,12,18,.92); border:1px solid var(--line); border-radius:18px; padding:16px; box-shadow:0 18px 50px rgba(0,0,0,.45), 0 0 24px rgba(62,203,255,.05); }
+  h2 { margin:2px 0 8px; font-size:15px; font-weight:500; letter-spacing:.12em; text-transform:uppercase; color:var(--gold); }
+  .hint { color:var(--muted); font-size:13px; line-height:1.4; margin:-2px 0 10px; }
+  .group { margin:0 0 16px; padding-bottom:12px; border-bottom:1px solid rgba(62,203,255,.12); }
+  .group:last-child { border-bottom:0; margin-bottom:0; }
+  .chips { display:flex; flex-wrap:wrap; gap:8px; }
+  button.chip { border:1px solid rgba(62,203,255,.28); background:#0c121b; color:var(--ink); border-radius:999px; padding:8px 12px; font:inherit; font-size:14px; cursor:pointer; }
+  button.chip:hover:not(:disabled) { border-color:var(--gold); box-shadow:0 0 12px rgba(62,203,255,.25); }
+  button.chip.on { background:#062033; border-color:var(--gold); color:#f3fcff; box-shadow:0 0 0 1px rgba(62,203,255,.35), 0 0 16px rgba(62,203,255,.28); }
+  button.chip.locked { opacity:.35; }
+  button.chip:disabled { opacity:.28; cursor:not-allowed; }
+  .rune { font-family:"Noto Sans Runic","Segoe UI Symbol",sans-serif; margin-right:5px; color:var(--gold); }
+  .cost { display:inline-block; margin-left:6px; padding:0 6px; border-radius:999px; background:rgba(62,203,255,.1); color:var(--gold); font-size:11px; }
+  .seal { text-align:center; padding:8px 8px 14px; border-bottom:1px solid rgba(62,203,255,.18); margin-bottom:12px; }
+  .seal span { letter-spacing:.28em; font-size:11px; color:var(--muted); text-transform:uppercase; }
+  .big { font-size:56px; line-height:1; margin:4px 0; color:var(--gold); font-weight:500; text-shadow:0 0 18px rgba(62,203,255,.55); }
+  .sub { text-align:center; color:var(--muted); margin:0 0 8px; }
+  .result-rune { font-size:26px; line-height:1.45; text-align:center; color:var(--gold); padding:14px 10px; border:1px solid var(--line); border-radius:14px; background:#070c14; box-shadow:inset 0 0 24px rgba(62,203,255,.06); min-height:74px; word-break:break-word; text-shadow:0 0 10px rgba(62,203,255,.35); }
+  .meta { color:var(--muted); font-size:14px; line-height:1.45; }
+  .breach { margin:8px 0; padding:8px 10px; border:1px solid #ff8fb8; border-radius:10px; color:#ffb4cb; background:rgba(255,80,120,.08); }
+  .picker { width:min(520px, 100%); max-height:86vh; overflow:auto; background:#070d16; border:1px solid var(--line); border-radius:16px; padding:16px; }
+  .picker h3 { margin:0 0 8px; color:var(--gold); letter-spacing:.08em; }
+  .tabs { display:flex; gap:8px; margin-bottom:10px; }
+  ul { margin:8px 0 0; padding-left:18px; color:var(--wine); }
+  input[type="text"] { width:100%; background:#070c14; color:var(--ink); border:1px solid var(--line); border-radius:12px; padding:10px 12px; font:inherit; }
+  input[type="text"]:focus { outline:1px solid var(--gold); box-shadow:0 0 12px rgba(62,203,255,.25); }
+  .row { display:flex; gap:8px; flex-wrap:wrap; margin-top:12px; }
+  .ghost { flex:1; background:transparent; color:var(--gold); border:1px solid var(--line); border-radius:12px; padding:10px 12px; font:inherit; cursor:pointer; }
+  .ghost:hover { background:rgba(62,203,255,.08); }
+  aside { position:sticky; top:12px; }
+  #saved { min-height:1.2em; }
+  .modal { position:fixed; inset:0; background:rgba(0,0,0,.62); display:none; align-items:center; justify-content:center; z-index:20; padding:20px; }
+  .modal.on { display:flex; }
+  .sheet { width:min(440px, 100%); background:#070d16; border:1px solid var(--line); border-radius:16px; padding:18px 18px 14px; box-shadow:0 0 28px rgba(62,203,255,.25); }
+  .sheet h3 { margin:0 0 8px; color:var(--gold); letter-spacing:.08em; font-size:16px; }
+  .sheet li { margin:6px 0; }
+  .sheet button { margin-top:12px; width:100%; background:#062033; color:var(--gold); border:1px solid var(--line); border-radius:12px; padding:10px; font:inherit; cursor:pointer; }
+</style>
 </head>
 <body>
-<a href="Runicheskiy_kompilyator.html">Открыть станок</a>
+<header>
+  <div class="mark">ᚠ ᚢ ᚦ ᚨ ᚱ ᚲ</div>
+  <h1>РУНИЧЕСКИЙ КОМПИЛЯТОР</h1>
+  <p>Сложи знаки. Материя снижает сложность, клинок пишет формулу на оружие, тишина остаётся дорогой печатью.</p>
+</header>
+<main>
+  <section id="builder"><p class="hint">Если здесь нет кнопок, страница открыта в предпросмотре. Нажми «Поделиться» и выбери Safari: руны собирает скрипт, без него рамка пустая.</p></section>
+  <aside>
+    <div class="seal">
+      <span id="kind">Заклинание</span>
+      <p class="big" id="level">—</p>
+      <p class="sub" id="points">0 очков</p>
+    </div>
+    <h2>Формула</h2>
+    <div class="result-rune" id="formula">выбери руны</div>
+    <p class="meta" id="gloss"></p>
+    <p class="meta" id="components"></p>
+    <p class="meta" id="material"></p>
+    <p class="breach" id="breach" hidden></p>
+    <ul id="warnings"></ul>
+    <h2 style="margin-top:16px">Имя свитка</h2>
+    <input id="name" type="text" placeholder="Клинок зелёного пламени">
+    <h2 style="margin-top:16px">Библиотека</h2>
+    <div class="chips" id="library"></div>
+    <div class="row">
+      <button class="ghost" id="save">Сохранить</button>
+      <button class="ghost" id="copy">Скопировать</button>
+      <button class="ghost" id="reset">Очистить</button>
+    </div>
+    <p class="sub" id="saved"></p>
+  </aside>
+</main>
+<div class="modal" id="servant">
+  <div class="picker">
+    <h3>СЛУГА</h3>
+    <p class="hint">Вид и опасность оба обязательны. Без обоих кнопка не ставит слугу.</p>
+    <div class="tabs">
+      <button class="chip on" id="tab-undead" type="button">Нежить</button>
+      <button class="chip" id="tab-summon" type="button">Призыв</button>
+    </div>
+    <div id="pick-kind"></div>
+    <h2>Опасность</h2>
+    <div class="chips" id="pick-cr"></div>
+    <p class="breach" id="pick-need" hidden>Выбери вид и опасность. Оба пункта обязательны.</p>
+    <div class="row">
+      <button class="ghost" id="servant-ok" type="button">Поставить</button>
+      <button class="ghost" id="servant-clear" type="button">Без слуги</button>
+    </div>
+  </div>
+</div>
+<div class="modal" id="modal">
+  <div class="sheet">
+    <h3>ПРАВИЛО</h3>
+    <ul id="modal-list"></ul>
+    <button id="modal-ok" type="button">Понятно</button>
+  </div>
+</div>
+<script>
+const groups = [
+  { id:"dmg", title:"Урон", multi:true, items:[
+    ["Ацид","ᚨᚲ","Кислота",1],["Хлад","ᚺᛚ","Холод",1],["Пламя","ᚠᛚ","Огонь",1],
+    ["Молния","ᛗᛚ","Молния",1],["Гром","ᚷᚱ","Звук",1],["ЯдУрон","ᛃᛞ","Яд",1],
+    ["Некро","ᚾᛖ","Некротический",2],["Псих","ᛈᛊ","Психический",2],
+    ["Сияние","ᛊᛁ","Излучение",2],["СилаУ","ᛊᚠ","Силовой",3],
+    ["Дробь","ᛞᚱ","Дробящий",1],["Кол","ᚲᛟ","Колющий",1],["Рез","ᚱᛖ","Рубящий",1]
+  ]},
+  { id:"fx", title:"Эффект", multi:true, items:[
+    ["Ослеп","ᛟᛊ","Ослепление",3],["Глух","ᚷᛚ","Глухота",1],["Страх","ᛊᛏ","Испуг",3],
+    ["Очаров","ᛟᚲ","Очарование",4],["Паралич","ᛈᚨ","Паралич",5],["Окамен","ᛟᚲᛗ","Окаменение",6],
+    ["ЯдЭф","ᛃᛞ","Отравление",3],["Оглуш","ᛟᚷ","Оглушение",4],["Сбит","ᛊᛒ","Сбивание с ног",1],
+    ["Сдерж","ᛊᛞ","Сдерживание",4],["Невид","ᚾᚢ","Невидимость",4],["Леч","ᛚᛖ","Лечение",2],
+    ["Щит","ᛊᚺ","Временные хиты",3],["Усил","ᚢᛊ","Бафф",4],["Ослаб","ᛟᛊᛚ","Дебафф",3],
+    ["Толчок","ᛏᛟ","Толчок",3],["Телепорт","ᛏᛈ","Перенос",4]
+  ]},
+  { id:"dead", title:"Мёртвые", hint:"Вернуть к жизни, не поднять нежить.", multi:false, items:[
+    ["нетМ","","не про мёртвых",0],["Стабиль","ᛊᛏᛒ","Стабилизировать умирающего",2],
+    ["Вернуть","ᚱᛖᚢ","Оживить умершего в эту минуту, тело цело",8],
+    ["Поднять","ᚱᚨᛁ","Поднять умершего не позже 10 дней",12],
+    ["Воскреш","ᚱᛖᛊ","Воскрешение, не хватает частей",16],
+    ["Истин","ᛏᚱᚢ","Истинное воскрешение",20]
+  ]},
+  { id:"undead", title:"Нежить", hint:"Поднять труп как нежить. Цена по опасности из бестиария, за одну тварь.", multi:false, items:[
+    ["нетН","","не поднимать нежить",0],
+    ["н0","ᚾᚲ0","КО 0",3],["н18","ᚾᚲ1","КО 1/8",4],["н14","ᚾᚲ2","КО 1/4",6],["н12","ᚾᚲ3","КО 1/2",8],
+    ["н1","ᚾᚲ4","КО 1",10],["н2","ᚾᚲ5","КО 2",12],["н3","ᚾᚲ6","КО 3",14],["н4","ᚾᚲ7","КО 4",16],
+    ["н5","ᚾᚲ8","КО 5",18],["н6","ᚾᚲ9","КО 6",20],["н8","ᚾᚲᚨ","КО 8",22],["н10","ᚾᚲᛒ","КО 10",24],
+    ["н12","ᚾᚲᚲ","КО 12",26],["н15","ᚾᚲᛞ","КО 15",30],["н20","ᚾᚲᛖ","КО 20+",34]
+  ]},
+  { id:"kind", title:"Вид призыва", hint:"Вид из бестиария. Опасность считается отдельно.", multi:false, items:[
+    ["нетВида","","без вида",0],
+    ["Зверь","ᛒᛖ","Зверь",0],["Растение","ᛈᛚ","Растение",0],
+    ["Фея","ᚠᛖ","Фея",1],["Элементаль","ᛖᛚ","Элементаль",1],["Чудовище","ᛗᛟ","Чудовище",1],["Гуманоид","ᚺᚢ","Гуманоид",1],
+    ["Исчадие","ᚠᛁ","Исчадие",2],["Небожитель","ᚲᛖᛚ","Небожитель",2],["Конструкт","ᚲᛟᚾ","Конструкт",2],
+    ["Аберрация","ᚨᛒ","Аберрация",2],["Великан","ᚷᛁ","Великан",2],["Слизь","ᛟᛟ","Слизь",2],
+    ["Дракон","ᛞᚱᚨ","Дракон",3],["НежитьП","ᚢᚾ","Нежить",3]
+  ]},
+  { id:"summon", title:"Опасность призыва", hint:"КО существа. Стая КО 1/4 считается как один КО 2.", multi:false, items:[
+    ["нетПр","","без призыва",0],
+    ["п0","ᛈᚲ0","КО 0",2],["п18","ᛈᚲ1","КО 1/8",3],["п14","ᛈᚲ2","КО 1/4",4],["п12","ᛈᚲ3","КО 1/2",6],
+    ["п1","ᛈᚲ4","КО 1",8],["п2","ᛈᚲ5","КО 2",10],["п3","ᛈᚲ6","КО 3",12],["п4","ᛈᚲ7","КО 4",14],
+    ["п5","ᛈᚲ8","КО 5",16],["п6","ᛈᚲ9","КО 6",18],["п8","ᛈᚲᚨ","КО 8",20],["п10","ᛈᚲᛒ","КО 10",22],
+    ["п12","ᛈᚲᚲ","КО 12",24],["п15","ᛈᚲᛞ","КО 15",28],["п20","ᛈᚲᛖ","КО 20+",32]
+  ]},
+  { id:"amp", title:"Усиление", hint:"Одинаковые руны эффекта сами не складываются. УсилЭф усиливает уже взятый эффект.", multi:false, items:[
+    ["нетУ","","без усиления",0],["УсилЭф","ᚢᛖ","Усилить эффект",3]
+  ]},
+  { id:"heal", title:"Лечение", hint:"Отдельная таблица, скромнее урона. 2к8 здесь стоит как 4к6 урона.", multi:false, items:[
+    ["нетЛ","","без лечения",0],["1к4л","ᛚᛁ","1к4",1],["2к4л","ᛚᛒ","2к4",2],["2к8л","ᛚᛞ","2к8",4],
+    ["3к8л","ᛚᚦ","3к8",5],["4к8л","ᛚᚠ","4к8",6],["6к8л","ᛚᛊ","6к8",8],["8к8л","ᛚᚨ","8к8",10]
+  ]},
+  { id:"dot", title:"Урон каждый ход", hint:"Пока эффект держится. Дороже разового кубика той же грани: это цена длительности.", multi:false, items:[
+    ["нетД","","без урона по ходам",0],["1к4д","ᛞᛁ","1к4 в ход",2],["1к6д","ᛞᛏ","1к6 в ход",3],
+    ["2к6д","ᛞᛒ","2к6 в ход",4],["3к6д","ᛞᚦ","3к6 в ход",5],["4к6д","ᛞᚠ","4к6 в ход",7]
+  ]},
+  { id:"dice", title:"Кубики урона", multi:false, items:[
+    ["нетк","","без кубиков",0],["1к6","ᛏᛁ","1к6",1],["2к6","ᛏᚢ","2к6",2],["3к6","ᛏᚦ","3к6",3],["4к6","ᛏᚠ","4к6",4],
+    ["5к6","ᛏᚱ","5к6",5],["6к6","ᛏᛊ","6к6",6],["8к6","ᛏᚨ","8к6",8],["10к6","ᛏᛏ","10к6",10],["12к6","ᛏᛟ","12к6",12]
+  ]},
+  { id:"face", title:"Грань", multi:false, items:[["к6","","к6",0],["к8","ᚢ","к8",1],["к10","ᛏ","к10",2],["к12","ᛞ","к12",4]]},
+  { id:"shape", title:"Форма", hint:"Клинок — как «зелёное пламя»: часть действия, удар оружием ближнего боя.", multi:false, items:[
+    ["Цель","ᛏᛖ","Одна цель",0],["Клинок","ᚲᛚ","На оружие",0],["Луч","ᛚᚢ","Линия",3],
+    ["Конус","ᚲᛟ","Конус",4],["Круг","ᚲᚱ","Сфера",4],["Куб","ᚲᚢ","Куб",4],["Цил","ᚲᛁ","Цилиндр",5],["Стен","ᛊᛏ","Стена",5]
+  ]},
+  { id:"blade", title:"Печать клинка", hint:"Только вместе с формой «на оружие».", multi:true, items:[
+    ["Всплеск","ᚹᛊ","Вторая цель в 5 футах",2],["Гул","ᛒᚢ","Урон, если цель двигается",2],["Клеймо","ᚲᛖ","Эффект держится на оружии раунд",2]
+  ]},
+  { id:"size", title:"Размер области", multi:false, items:[
+    ["Малый","ᛗ","10–15 фт",0],["Средний","ᛊ","20–30 фт",2],["Большой","ᛒ","40–60 фт",3],["Огромный","ᛟ","90+ фт",5]
+  ]},
+  { id:"range", title:"Дистанция", hint:"У клинка дальность всегда касание: оружие само достаёт.", multi:false, items:[
+    ["Кас","ᚲᚨ","Касание",0],["Близ","ᛒᛚ","30 футов",1],["Сред","ᛊᛗ","60 футов",2],
+    ["Дал","ᛞᚨ","120 футов",4],["ОчДал","ᛟᛞ","300 футов",6],["Зрен","ᛊᛖ","В пределах зрения",5]
+  ]},
+  { id:"sight", title:"Видимость", hint:"Отдельно от дистанции. Формула не задевает цель за стеной и невидимую.", multi:false, items:[
+    ["ЛюбаяВ","","видимость не важна",0],["Видишь","ᛊᛁᚷ","Только существа, которых видишь",2]
+  ]},
+  { id:"dur", title:"Длительность", multi:false, items:[
+    ["Мгнов","ᛗᚷ","Мгновенно",0],["Раунд","ᚱᛟ","1 раунд",2],["Минута","ᛗᛁ","1 минута",3],
+    ["10Мин","ᛏᛗ","10 минут",4],["Час","ᚺᚨ","1 час",5],["8Часов","ᚺᛟ","8 часов",8],
+    ["24Часа","ᛞᚺ","24 часа",10],["ПокаНе","ᛈᚾ","Пока не рассеяно",6],["Пост","ᛈᛟ","Постоянно, пока не рассеяно, без концентрации",10]
+  ]},
+  { id:"conc", title:"Концентрация", multi:false, items:[["Конц","ᚲᛟ","Нужна концентрация",0],["БезКонц","ᛒᚲ","Без концентрации",4]]},
+  { id:"time", title:"Время наложения", multi:false, items:[
+    ["Дейст","ᛞᛖ","Действие",0],["Атака","ᚨᛏ","Как часть действия атаки",2],["Бонус","ᛒᛟ","Бонусное",3],["Реак","ᚱᛖ","Реакция",4],
+    ["Ритуал","ᚱᛁ","Ритуал",-1],["ЧасНакл","ᚺᚨ","Час",-2]
+  ]},
+  { id:"save", title:"Спасбросок", hint:"Нет спасброска — формула его не просит: удар оружием, бросок атаки, бафф на себя. Автоэффект — цель не сопротивляется, эффект проходит сам.", multi:false, items:[
+    ["Нет","ᚾᛟ","Нет спасброска",0],
+    ["Ловк","ᛚᛟ","Ловкость",2],["СилаС","ᛊᛁ","Сила",2],["Тело","ᛏᛖ","Телосложение",2],
+    ["Мудр","ᛗᚢ","Мудрость",2],["Инт","ᛁᚾ","Интеллект",3],["Хар","ᚺᚨ","Харизма",3],
+    ["Авто","ᚨᚢ","Автоэффект",8]
+  ]},
+  { id:"attack", title:"Попадание", hint:"Бросок атаки заклинанием идёт против класса брони. Не ставь его вместе с автоэффектом.", multi:false, items:[
+    ["нетА","","без броска атаки",0],["АтакаЗак","ᚨᚲ","Против класса брони",2]
+  ]},
+  { id:"half", title:"Успех спасброска", multi:false, items:[
+    ["полный","","успех отменяет урон",0],["Половина","ᚺᚨᛚ","Половина урона при успехе",3]
+  ]},
+  { id:"repeat", title:"Повтор спасброска", multi:false, items:[
+    ["нетП","","без повтора",0],["Повтор","ᚱᛈ","Повтор в конце хода",2]
+  ]},
+  { id:"targets", title:"Число целей", hint:"Для выбранных существ, не для области.", multi:false, items:[
+    ["1ц","","одна",0],["2ц","ᛏᛒ","две",2],["3ц","ᛏᚦᚱ","три",3],["6ц","ᛏᛊᛁ","до шести",5]
+  ]},
+  { id:"side", title:"Кого задевает", multi:false, items:[
+    ["Любые","","любые существа",0],["Враги","ᚹᚱ","только враги",3],["Свои","ᛊᛒᛟ","только союзники и ты",0]
+  ]},
+  { id:"school", title:"Школа", multi:false, items:[
+    ["Воплощение","ᚹᛟ","Воплощение",0],["Ограждение","ᛟᚷᚱ","Ограждение",0],["Вызов","ᚹᛁ","Вызов",0],
+    ["ОчарованиеШ","ᛟᚲᛊ","Очарование",0],["Прорицание","ᛈᚱ","Прорицание",0],["Иллюзия","ᛁᛚ","Иллюзия",0],
+    ["Некромантия","ᚾᛖᚲ","Некромантия",0],["Преобразование","ᛈᚱᛖ","Преобразование",0]
+  ]},
+  { id:"mat", title:"Материя", hint:"Чем дороже расходуемый предмет, тем больше очков он снимает. Потолок — половина базы, не ниже 1 у ячейки и 0 у заговора.", multi:false, items:[
+    ["нет","","без материи",0],["фокус","","фокус, не расходуется",0],
+    ["25","ᛗᚨ","25 зм",-1],["50","ᛗᛒ","50 зм",-2],["100","ᛗᚲ","100 зм",-3],
+    ["250","ᛗᛞ","250 зм",-4],["500","ᛗᛖ","500 зм",-5],["1000","ᛗᚠ","1 000 зм",-6],
+    ["2500","ᛗᚷ","2 500 зм",-7],["5000","ᛗᚺ","5 000 зм",-8],["10000","ᛗᛁ","10 000 зм",-9],
+    ["25000","ᛗᛃ","25 000 зм",-10],["50000","ᛗᚲᛗ","50 000 зм",-11]
+  ]},
+  { id:"voice", title:"Слово и жест", hint:"Их берут, чтобы снизить сложность. Оба вместе дают −2.", multi:true, items:[
+    ["V","ᚢᛟ","Вербальный",-1],["S","ᛊᛟ","Соматический",-1]
+  ]},
+  { id:"comp", title:"Печать без компонентов", hint:"Единственный свободный отказ. Снимает V, S и M сразу.", multi:false, items:[
+    ["обыч","","обычные компоненты",0],["noAll","ᛒᚲᛗ","Без любых компонентов",10]
+  ]}
+];
+const state = {};
+groups.forEach(g => state[g.id] = g.multi ? [] : g.items[0][0]);
+state.cantrip = false;
+state.caster = 5;
+state.half = false;
+const builder = document.getElementById("builder");
+const mode = document.createElement("div");
+mode.className = "group";
+mode.innerHTML = "<h2>Режим</h2><div class='chips' id='modechips'></div><p class='hint'>Уровень заклинателя режет круг формулы. Полукастер берёт половину.</p><div class='chips' id='lvlchips'></div>";
+builder.appendChild(mode);
+[["spell","Заклинание"],["cantrip","Заговор"]].forEach(([id,label]) => {
+  const b = document.createElement("button");
+  b.className = "chip" + (id==="spell"?" on":"");
+  b.textContent = label;
+  b.onclick = () => { state.cantrip = id==="cantrip"; [...mode.querySelectorAll("button")].forEach(c=>c.classList.remove("on")); b.classList.add("on"); render(); };
+  mode.querySelector("#modechips").appendChild(b);
+});
+const lvl = document.createElement("div");
+[1,2,3,4,5,6,7,8,9,10,11,17,20].forEach(n => {
+  const b = document.createElement("button");
+  b.className = "chip" + (n === 5 ? " on" : "");
+  b.textContent = String(n);
+  b.onclick = () => { state.caster = n; [...document.querySelectorAll("#lvlchips button")].forEach(c => c.classList.remove("on")); b.classList.add("on"); render(); };
+  document.getElementById("lvlchips").appendChild(b);
+});
+const half = document.createElement("button");
+half.className = "chip";
+half.textContent = "Полукастер";
+half.onclick = () => { state.half = !state.half; half.classList.toggle("on", state.half); render(); };
+document.getElementById("lvlchips").appendChild(half);
+groups.forEach(g => {
+  if (["undead","kind","summon"].includes(g.id)) return;
+  const wrap = document.createElement("div");
+  wrap.className = "group";
+  wrap.innerHTML = `<h2>${g.title}</h2>` + (g.hint ? `<p class="hint">${g.hint}</p>` : "");
+  const chips = document.createElement("div");
+  chips.className = "chips";
+  g.items.forEach(item => {
+    const b = document.createElement("button");
+    b.className = "chip";
+    b.dataset.group = g.id;
+    b.dataset.id = item[0];
+    const sign = item[3] > 0 ? "+" : "";
+    b.innerHTML = `${item[1] ? `<span class="rune">${item[1]}</span>` : ""}${item[2]} <span class="cost">${sign}${item[3]}</span>`;
+    b.onclick = () => {
+    if (state.cantrip && ["Паралич","Окамен","Оглуш","Очаров","Авто","БезКонц","Реак","10Мин","Час","8Часов","24Часа","ПокаНе","Дал","ОчДал","Зрен","Средний","Большой","Огромный","3к6","4к6","5к6","6к6","8к6","10к6","12к6","к12","noAll"].includes(item[0])) {
+      document.getElementById("modal-list").innerHTML = "<li>В заговоре это нельзя: не больше 3 очков, без сильных состояний, автоэффекта, реакции, дальней дистанции, крупной области и урона выше 2к6 или 1к10.</li>";
+      document.getElementById("modal").classList.add("on");
+      window._warnKey = "locked";
+      return;
+    }
+    toggle(g, item[0]);
+  };
+    chips.appendChild(b);
+  });
+  wrap.appendChild(chips);
+  builder.appendChild(wrap);
+});
+const servantBtn = document.createElement("div");
+servantBtn.className = "group";
+servantBtn.innerHTML = "<h2>Слуга</h2><p class='hint'>Нежить или призванное существо. Вид и опасность выбираются в одном окне и оба обязательны.</p><div class='chips'><button class='chip' id='open-servant' type='button'>Выбрать слугу</button></div><p class='meta' id='servant-label'>Слуга не выбран</p>";
+builder.appendChild(servantBtn);
+const pick = { mode: "undead", kind: "", cr: "" };
+function paintPick() {
+  document.getElementById("tab-undead").classList.toggle("on", pick.mode === "undead");
+  document.getElementById("tab-summon").classList.toggle("on", pick.mode === "summon");
+  const kindBox = document.getElementById("pick-kind");
+  kindBox.innerHTML = pick.mode === "undead" ? "<h2>Вид</h2><div class='chips'><button class='chip on' type='button'>Нежить</button></div>" : "<h2>Вид</h2><div class='chips' id='kind-chips'></div>";
+  if (pick.mode === "summon") {
+    groups.find(g => g.id === "kind").items.filter(it => it[0] !== "нетВида").forEach(it => {
+      const b = document.createElement("button");
+      b.className = "chip" + (pick.kind === it[0] ? " on" : "");
+      b.textContent = it[2];
+      b.onclick = () => { pick.kind = it[0]; paintPick(); };
+      document.getElementById("kind-chips").appendChild(b);
+    });
+  } else pick.kind = "НежитьП";
+  const crBox = document.getElementById("pick-cr");
+  crBox.innerHTML = "";
+  const src = pick.mode === "undead" ? "undead" : "summon";
+  groups.find(g => g.id === src).items.filter(it => !["нетН","нетПр"].includes(it[0])).forEach(it => {
+    const b = document.createElement("button");
+    b.className = "chip" + (pick.cr === it[0] ? " on" : "");
+    b.textContent = it[2] + " +" + it[3];
+    b.onclick = () => { pick.cr = it[0]; paintPick(); };
+    crBox.appendChild(b);
+  });
+}
+document.getElementById("open-servant").onclick = () => { paintPick(); document.getElementById("servant").classList.add("on"); };
+document.getElementById("tab-undead").onclick = () => { pick.mode = "undead"; pick.cr = ""; paintPick(); };
+document.getElementById("tab-summon").onclick = () => { pick.mode = "summon"; pick.kind = ""; pick.cr = ""; paintPick(); };
+document.getElementById("servant-ok").onclick = () => {
+  const need = document.getElementById("pick-need");
+  if (!pick.cr || (pick.mode === "summon" && !pick.kind)) { need.hidden = false; return; }
+  need.hidden = true;
+  if (pick.mode === "undead") {
+    state.undead = pick.cr; state.summon = "нетПр"; state.kind = "нетВида";
+  } else {
+    state.undead = "нетН"; state.summon = pick.cr; state.kind = pick.kind;
+  }
+  document.getElementById("servant").classList.remove("on");
+  render();
+};
+document.getElementById("servant-clear").onclick = () => {
+  state.undead = "нетН"; state.summon = "нетПр"; state.kind = "нетВида";
+  pick.cr = ""; pick.kind = "";
+  document.getElementById("servant").classList.remove("on");
+  render();
+};
+function toggle(g, id) {
+  if (g.multi) {
+    const arr = state[g.id];
+    const i = arr.indexOf(id);
+    if (i >= 0) arr.splice(i, 1); else arr.push(id);
+  } else state[g.id] = id;
+  render();
+}
+function find(gid, id) { return groups.find(g => g.id === gid).items.find(it => it[0] === id); }
+function levelOf(points) {
+  if (points <= 0) return 0;
+  if (points <= 8) return 1;
+  if (points <= 14) return 2;
+  if (points <= 22) return 3;
+  if (points <= 28) return 4;
+  if (points <= 34) return 5;
+  if (points <= 40) return 6;
+  if (points <= 46) return 7;
+  if (points <= 52) return 8;
+  return 9;
+}
+function ownLevel(points) {
+  const raw = levelOf(points);
+  if (!raw) return 0;
+  return Math.min(9, raw + 4);
+}
+function render() {
+  const blade = state.shape === "Клинок";
+  if (blade) state.range = "Кас";
+  if (state.cantrip) {
+    state.fx = state.fx.filter(id => !["Паралич","Окамен","Оглуш","Очаров"].includes(id));
+    if (state.save === "Авто") state.save = "Нет";
+    if (state.conc === "БезКонц") state.conc = "Конц";
+    if (state.time === "Реак") state.time = "Дейст";
+    if (!["Мгнов","Раунд","Минута"].includes(state.dur)) state.dur = "Мгнов";
+    if (["Дал","ОчДал","Зрен"].includes(state.range)) state.range = "Сред";
+    if (!["Цель","Клинок"].includes(state.shape) && state.size !== "Малый") state.size = "Малый";
+    if (["3к6","4к6","5к6","6к6","8к6","10к6","12к6"].includes(state.dice)) state.dice = "2к6";
+    if (state.face === "к12") state.face = "к10";
+    if (state.comp === "noAll") state.comp = "обыч";
+  }
+  const parts = [], gloss = [];
+  let base = 0;
+  const push = (item, glue) => {
+    if (!item || item[0] === "нетк" || item[0] === "к6" || item[0] === "обыч" || item[0] === "нетУ" || item[0] === "нетА" || item[0] === "полный" || item[0] === "нетП" || item[0] === "1ц" || item[0] === "Любые" || item[0] === "нетЛ" || item[0] === "ЛюбаяВ" || item[0] === "нетД" || item[0] === "нетМ" || item[0] === "нетПр" || item[0] === "нетН" || item[0] === "нетВида") return;
+    base += item[3];
+    if (item[1]) {
+      if (glue && parts.length) parts[parts.length - 1] += item[1];
+      else parts.push(item[1]);
+    }
+    gloss.push(item[2]);
+  };
+  state.dmg.forEach(id => push(find("dmg", id)));
+  state.fx.forEach(id => push(find("fx", id)));
+  if (state.fx.length && state.amp === "УсилЭф") push(find("amp", "УсилЭф"));
+  const dice = find("dice", state.dice), face = find("face", state.face);
+  if (dice[0] !== "нетк") {
+    base += dice[3] + (face[0] === "к6" ? 0 : face[3]);
+    parts.push(dice[1] + (face[0] === "к6" ? "" : face[1]));
+    gloss.push(dice[2].replace("к6", face[2]));
+  }
+  push(find("shape", state.shape));
+  if (blade) state.blade.forEach(id => push(find("blade", id)));
+  const size = find("size", state.size);
+  const area = !["Цель","Клинок"].includes(state.shape);
+  if (area) { base += size[3]; parts[parts.length - 1] += size[1]; gloss[gloss.length - 1] += ", " + size[2]; }
+  if (state.dur === "Пост") state.conc = "Конц";
+  push(find("range", state.range));
+  ["dur","conc","time","save"].forEach(id => push(find(id, state[id])));
+  ["attack","half","repeat","targets","side","school","heal","sight","dot","dead","undead","kind","summon"].forEach(id => push(find(id, state[id])));
+  state.voice.forEach(id => push(find("voice", id)));
+  const strong = ["Паралич","Окамен","Оглуш","Очаров","Невид"].filter(id => state.fx.includes(id));
+  if (strong.length > 2) base += 6;
+  const targetExtra = { "2ц": 1, "3ц": 2, "6ц": 3 }[state.targets] || 0;
+  if (strong.length && targetExtra) base += targetExtra;
+  const long = ["Минута","10Мин","Час","8Часов","24Часа","ПокаНе","Пост"].includes(state.dur);
+  if (long && state.conc !== "БезКонц") state.conc = "Конц";
+
+  const forced = [];
+  if (["Леч","Невид","Телепорт","Окамен","Паралич"].some(id => state.fx.includes(id))) forced.push("сильный эффект");
+  if (["10Мин","Час","8Часов","24Часа","ПокаНе"].includes(state.dur)) forced.push("долгий срок");
+  if (area && ["Большой","Огромный"].includes(state.size)) forced.push("широкая область");
+  if (blade) forced.push("оружие");
+  const mat = find("mat", state.mat);
+  const noAll = state.comp === "noAll";
+  const voiceCut = noAll ? 0 : state.voice.reduce((s, id) => s + find("voice", id)[3], 0);
+  let matCut = 0;
+  if (!noAll && mat[3] < 0) {
+    const cap = Math.floor(Math.max(base - voiceCut, 0) / 2);
+    matCut = Math.max(mat[3], -cap);
+  }
+  if (noAll) base += 10;
+  const points = Math.max(state.cantrip ? 0 : 1, base + matCut);
+  let level = state.cantrip ? 0 : ownLevel(points);
+  const raw = state.cantrip ? 0 : levelOf(points);
+  const cap = Math.max(1, state.half ? Math.floor(state.caster / 2) : state.caster);
+  const overLevel = !state.cantrip && level > cap;
+  const diceN = {нетк:0,"1к6":1,"2к6":2,"3к6":3,"4к6":4,"5к6":5,"6к6":6,"8к6":8,"10к6":10,"12к6":12}[state.dice] || 0;
+  const areaCap = !area || state.size === "Малый" ? 99 : raw <= 2 ? 6 : raw <= 4 ? 8 : raw <= 6 ? 10 : 12;
+  const quick = ["Бонус","Реак"].includes(state.time);
+  const scale = state.cantrip ? (state.caster >= 17 ? 3 : state.caster >= 11 ? 2 : state.caster >= 5 ? 1 : 0) : Math.max(0, level - levelOf(Math.max(points, 1)));
+
+  const hasV = !noAll && state.voice.includes("V");
+  const hasS = !noAll && state.voice.includes("S");
+  let comps = [hasV && "V", hasS && "S"].filter(Boolean).join(", ") || "нет";
+  let matText = "Материя не нужна";
+  if (noAll) {
+    comps = "нет";
+    matText = "Печать без компонентов, +10. Слово и жест не дают скидку.";
+    gloss.push("без любых компонентов");
+  } else if (blade) {
+    comps = [hasV && "V", "M"].filter(Boolean).join(", ");
+    matText = "M — оружие ближнего боя ценой не меньше 1 см. Дополнительно расходуется " + mat[2] + ` (${matCut}).`;
+  } else if (mat[3] < 0) {
+    comps = [hasV && "V", hasS && "S", "M"].filter(Boolean).join(", ");
+    matText = `M расходуется, ${mat[2]}, скидка ${matCut}.`;
+    parts.push(mat[1]);
+    gloss.push(mat[2]);
+  }
+  document.getElementById("kind").textContent = state.cantrip ? "Заговор" : "Заклинание";
+  const servantLabel = document.getElementById("servant-label");
+  if (servantLabel) {
+    if (state.undead !== "нетН") servantLabel.textContent = "Нежить, " + find("undead", state.undead)[2];
+    else if (state.summon !== "нетПр") servantLabel.textContent = find("kind", state.kind)[2] + ", " + find("summon", state.summon)[2];
+    else servantLabel.textContent = "Слуга не выбран";
+  }
+  document.getElementById("level").textContent = state.cantrip ? "0" : String(level);
+  document.getElementById("points").textContent = state.cantrip
+    ? `${points} очков${scale ? ", на этом уровне +" + scale + " к кубику" : ""}`
+    : `${points} очков, сырая мощь ${raw} круга, своя печать +4`;
+  document.getElementById("formula").textContent = parts.join(" ") || "—";
+  document.getElementById("gloss").textContent = gloss.join(" · ");
+  document.getElementById("components").textContent = "Компоненты: " + comps;
+  document.getElementById("material").textContent = matText;
+  const warns = [];
+  if (blade && !["Дейст","Атака"].includes(state.time)) warns.push("Клинок накладывается действием или как часть действия атаки.");
+  if (!blade && state.blade.length) warns.push("Печати клинка не работают без формы «на оружие».");
+  if (state.cantrip) {
+    if (points > 3) warns.push("Сейчас " + points + " очков — заговор так не собрать. Убери руны или возьми слово, жест и материю.");
+  }
+  if (strong.length > 2) warns.push("Больше двух сильных эффектов: третий и далее стоят ещё +5. Сейчас это уже в сумме.");
+  if (strong.length && targetExtra) gloss.push("сильный эффект на несколько целей: +" + targetExtra + " сверх обычной цены");
+  if (area && diceN > areaCap) warns.push("Область этого круга не несёт больше " + areaCap + "к6. Уменьши кубики или круг.");
+  if (quick && (diceN > 6 || state.fx.includes("Паралич") || state.fx.includes("Окамен"))) warns.push("Бонусное действие и реакция: не больше 6к6 и без паралича с окаменением.");
+  if (state.time === "Ритуал") warns.push("Ритуал нельзя метать в бою.");
+  if (overLevel) warns.push("Круг " + level + " выше доступного: заклинатель " + state.caster + (state.half ? " (полукастер)" : "") + " берёт не выше " + cap + ".");
+  if ((state.fx.includes("Паралич") || state.fx.includes("Окамен")) && long)
+    gloss.push("в конце каждого хода цель повторяет спасбросок");
+  if (state.dur === "Пост") gloss.push("постоянно, пока не рассеяно, концентрации нет");
+  else if (long && state.conc === "Конц") gloss.push("держится концентрацией");
+  if (state.summon !== "нетПр" && state.kind === "нетВида") warns.push("У призыва не выбран вид существа.");
+  if (state.kind !== "нетВида" && state.summon === "нетПр") warns.push("У вида нет опасности: выбери КО.");
+  if (!state.cantrip && level > 1) gloss.push("выше минимума — бесплатный кубик за круг");
+  if (state.cantrip && scale) gloss.push("на " + state.caster + " уровне +" + scale + " кубик");
+  if (state.save === "Авто" && state.attack === "АтакаЗак") warns.push("Автоэффект и бросок атаки вместе не ставятся.");
+  if (state.save === "Авто" && (state.fx.includes("Паралич") || state.fx.includes("Окамен")) && area && state.size !== "Малый")
+    warns.push("Запретная связка: автоэффект + паралич или окаменение + не малая область.");
+  if (state.half === "Половина" && !["Ловк","СилаС","Тело","Мудр","Инт","Хар"].includes(state.save)) warns.push("Половина урона имеет смысл только при спасброске.");
+  const note = [
+    document.getElementById("name").value.trim() || "Без имени",
+    (state.cantrip ? "Заговор" : "Круг " + level) + ", " + find("school", state.school)[2],
+    document.getElementById("formula").textContent,
+    gloss.join(" · "),
+    "Компоненты: " + comps,
+    matText,
+    state.time === "Ритуал" ? "Только вне боя." : "",
+    long ? (state.conc === "БезКонц" ? "Без концентрации." : "Концентрация.") : "",
+    overLevel ? "Выше доступного круга заклинателя." : ""
+  ].filter(Boolean).join("\n");
+  window._note = note;
+  document.getElementById("warnings").innerHTML = "";
+  const breach = document.getElementById("breach");
+  if (warns.length) {
+    breach.hidden = false;
+    breach.textContent = "Нарушение правил: " + warns.join(" ");
+  } else breach.hidden = true;
+  const key = warns.join("|");
+  if (key && key !== window._warnKey) {
+    window._warnKey = key;
+    document.getElementById("modal-list").innerHTML = warns.map(w => `<li>${w}</li>`).join("");
+    document.getElementById("modal").classList.add("on");
+  }
+  if (!key) window._warnKey = "";
+  window._blocked = warns.length > 0;
+  const banned = new Set(["Паралич","Окамен","Оглуш","Очаров","Авто","БезКонц","Реак","10Мин","Час","8Часов","24Часа","ПокаНе","Дал","ОчДал","Зрен","Средний","Большой","Огромный","3к6","4к6","5к6","6к6","8к6","10к6","12к6","к12","noAll"]);
+  document.querySelectorAll("button.chip[data-id]").forEach(b => {
+    const g = groups.find(x => x.id === b.dataset.group);
+    const on = g.multi ? state[g.id].includes(b.dataset.id) : state[g.id] === b.dataset.id;
+    b.classList.toggle("on", on);
+    const cantripLock = state.cantrip && banned.has(b.dataset.id);
+    b.classList.toggle("locked", cantripLock);
+    b.disabled = (g.id === "blade" && !blade) || (g.id === "range" && blade) || (g.id === "size" && !area) || ((g.id === "mat" || g.id === "voice") && noAll);
+  });
+}
+document.getElementById("modal-ok").onclick = () => document.getElementById("modal").classList.remove("on");
+document.getElementById("modal").onclick = (e) => { if (e.target.id === "modal") e.currentTarget.classList.remove("on"); };
+document.getElementById("copy").onclick = async () => {
+  if (window._blocked) {
+    document.getElementById("modal-list").innerHTML = "<li>Формула нарушает потолок. Копирование закрыто, пока предупреждение не исчезнет.</li>";
+    document.getElementById("modal").classList.add("on");
+    return;
+  }
+  const text = window._note || "";
+  try { await navigator.clipboard.writeText(text); document.getElementById("saved").textContent = "Скопировано"; }
+  catch { document.getElementById("saved").textContent = "Скопируй вручную"; }
+};
+function libraryLoad() {
+  const box = document.getElementById("library");
+  const all = JSON.parse(localStorage.getItem("rune-spells") || "[]");
+  box.innerHTML = "";
+  all.forEach((spell, i) => {
+    const b = document.createElement("button");
+    b.className = "chip";
+    b.textContent = spell.name || "Без имени";
+    b.onclick = () => { Object.assign(state, spell.state); render(); document.getElementById("name").value = spell.name || ""; };
+    box.appendChild(b);
+  });
+}
+document.getElementById("save").onclick = () => {
+  const all = JSON.parse(localStorage.getItem("rune-spells") || "[]");
+  const name = document.getElementById("name").value.trim() || "Без имени";
+  all.push({ name, state: JSON.parse(JSON.stringify(state)), note: window._note });
+  localStorage.setItem("rune-spells", JSON.stringify(all.slice(-24)));
+  libraryLoad();
+  document.getElementById("saved").textContent = "Сохранено в этом браузере";
+};
+libraryLoad();
+document.getElementById("reset").onclick = () => { groups.forEach(g => state[g.id] = g.multi ? [] : g.items[0][0]); render(); };
+render();
+</script>
 </body>
 </html>
