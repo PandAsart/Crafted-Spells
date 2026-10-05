@@ -1,0 +1,12 @@
+{
+  "name": "Рунические печати",
+  "short_name": "Печати",
+  "start_url": "Runicheskiy_kompilyator.html",
+  "display": "standalone",
+  "background_color": "#05070b",
+  "theme_color": "#05070b",
+  "icons": [
+    { "src": "pechati_icon_180.png", "sizes": "180x180", "type": "image/png" },
+    { "src": "pechati_icon_512.png", "sizes": "512x512", "type": "image/png" }
+  ]
+}
