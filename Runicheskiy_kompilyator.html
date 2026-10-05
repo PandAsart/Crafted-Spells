@@ -145,7 +145,7 @@ const groups = [
     ["ЯдЭф","ᛃᛞ","Отравление",3],["Оглуш","ᛟᚷ","Оглушение",4],["Сбит","ᛊᛒ","Сбивание с ног",1],
     ["Сдерж","ᛊᛞ","Сдерживание",4],["Невид","ᚾᚢ","Невидимость",4],["Леч","ᛚᛖ","Лечение",2],
     ["Щит","ᛊᚺ","Временные хиты",3],
-    ["Толчок","ᛏᛟ","Толчок",3],["Телепорт","ᛏᛈ","Перенос",4],
+    ["Толчок","ᛏᛟ","Толчок",3],["Телепорт","ᛏᛈ","Перенос",4],["Сдвиг","ᛗᛟᚢ","Сдвинуть область заклинания",3],
     ["Рассеять","ᛞᛁᛊ","Рассеять заклинание",6],["Перехват","ᚲᛟᚾ","Перехватить заклинание",8],
     ["Снять","ᚲᛚᚾ","Снять одно состояние",4],["СнятьМн","ᚲᛚᚱ","Снять проклятие или несколько состояний",8],
     ["Сквозь","ᚹᚨᛚ","Сквозь стену нельзя",8],["Свет","ᛚᛁᚷ","Свет",2],["ТьмаМаг","ᛞᚨᚱ","Магическая тьма",5],
@@ -405,6 +405,11 @@ groups.forEach(g => {
     b.onclick = () => {
     if (state.shape === "Цель" && state.range !== "Кас" && g.id === "sight" && item[0] === "ЛюбаяВ") {
       document.getElementById("modal-list").innerHTML = "<li>Дальняя точечная формула бьёт только тех, кого видишь. Снять зрение нельзя.</li>";
+      document.getElementById("modal").classList.add("on");
+      return;
+    }
+    if (state.fx.includes("Сдвиг") && g.id === "conc" && item[0] === "БезКонц") {
+      document.getElementById("modal-list").innerHTML = "<li>Сдвинуть область заклинания можно только пока держишь концентрацию.</li>";
       document.getElementById("modal").classList.add("on");
       return;
     }
@@ -675,6 +680,7 @@ function render() {
   const targetExtra = targetN > 1 ? targetN - 1 : 0;
   if (strong.length && targetExtra) base += targetExtra;
   const long = ["Минута","10Мин","Час","8Часов","24Часа","ПокаНе","Пост"].includes(state.dur);
+  if (state.fx.includes("Сдвиг")) state.conc = "Конц";
   if (long && state.conc !== "БезКонц") state.conc = "Конц";
 
   const forced = [];
@@ -760,7 +766,8 @@ function render() {
   if (state.save === "Авто" && state.attack === "АтакаЗак") warns.push("Автоэффект и бросок атаки вместе не ставятся.");
   if (state.save === "Авто" && (state.fx.includes("Паралич") || state.fx.includes("Окамен")) && area && sizeFt(state.size) > 15)
     warns.push("Запретная связка: автоэффект + паралич или окаменение + не малая область.");
-  if (state.real === "Явь" && state.illus === "нетИ") warns.push("Ложь без размера иллюзии не становится вещью.");
+  if (state.fx.includes("Сдвиг")) gloss.push("область можно сдвинуть, пока держится концентрация");
+  if (state.fx.includes("Сдвиг") && ["Цель","Клинок"].includes(state.shape)) warns.push("Сдвинуть можно только область, не одну цель и не клинок.");
   if (state.real === "Явь") gloss.push("ложь стала вещью из простой материи");
   if (splitOn) {
     const sum = state.dmg.reduce((s, id) => s + ((state.split[id] && state.split[id].n) || 0), 0);
