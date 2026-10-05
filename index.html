@@ -46,16 +46,16 @@
   button.chip:disabled { opacity:.28; cursor:not-allowed; }
   .rune { font-family:"Noto Sans Runic","Segoe UI Symbol",sans-serif; margin-right:5px; color:var(--gold); }
   .chip.on { animation:pulse 1.2s ease-in-out infinite; }
-  .tone-fire.on { border-color:#ff6a2a; color:#ffd7c2; box-shadow:0 0 18px rgba(255,90,20,.7); animation:burn 0.9s ease-in-out infinite; }
-  .tone-poison.on { border-color:#7dff4a; color:#dfffcb; box-shadow:0 0 16px rgba(80,220,40,.55); animation:drip 1.2s ease-in infinite; }
-  .tone-cold.on { border-color:#bfe9ff; color:#eef9ff; box-shadow:0 0 16px rgba(180,230,255,.6); animation:frost 1.3s ease-in-out infinite; }
-  .tone-lightning.on { border-color:#ffe56a; color:#fff6c2; box-shadow:0 0 18px rgba(255,220,60,.65); animation:flash 0.7s linear infinite; }
-  .tone-necro.on { border-color:#c9a6ff; color:#efe4ff; box-shadow:0 0 16px rgba(160,100,255,.55); animation:pulse 1.4s ease-in-out infinite; }
-  .tone-heal.on { border-color:#f4fff8; color:#ffffff; box-shadow:0 0 16px rgba(255,255,255,.4); animation:pulse 1.5s ease-in-out infinite; }
-  .tone-fear.on { border-color:#b7b7c4; color:#d9d9e2; box-shadow:0 0 12px rgba(180,180,200,.35); animation:pulse 1.6s ease-in-out infinite; }
-  .tone-buff.on { border-color:#7dffd1; box-shadow:0 0 14px rgba(80,255,190,.4); }
-  .tone-debuff.on { border-color:#ff8fb8; box-shadow:0 0 14px rgba(255,80,130,.4); }
-  .tone-other.on { border-color:#3ecbff; box-shadow:0 0 14px rgba(62,203,255,.45); }
+  button.chip.tone-fire.on { background:#2a1208; border-color:#ff6a2a; color:#ffd7c2; box-shadow:0 0 18px rgba(255,90,20,.85); animation:burn 0.9s ease-in-out infinite; }
+  button.chip.tone-poison.on { background:#10240c; border-color:#7dff4a; color:#dfffcb; box-shadow:0 0 16px rgba(80,220,40,.7); animation:drip 1.2s ease-in infinite; }
+  button.chip.tone-cold.on { background:#0c1c28; border-color:#bfe9ff; color:#eef9ff; box-shadow:0 0 16px rgba(180,230,255,.7); animation:frost 1.3s ease-in-out infinite; }
+  button.chip.tone-lightning.on { background:#2a2408; border-color:#ffe56a; color:#fff6c2; box-shadow:0 0 18px rgba(255,220,60,.75); animation:flash 0.7s linear infinite; }
+  button.chip.tone-necro.on { background:#1a1028; border-color:#c9a6ff; color:#efe4ff; box-shadow:0 0 16px rgba(160,100,255,.65); animation:pulse 1.4s ease-in-out infinite; }
+  button.chip.tone-heal.on { background:#163028; border-color:#b6ffe0; color:#ffffff; box-shadow:0 0 16px rgba(180,255,220,.55); animation:pulse 1.5s ease-in-out infinite; }
+  button.chip.tone-fear.on { background:#1c1c24; border-color:#b7b7c4; color:#d9d9e2; box-shadow:0 0 12px rgba(180,180,200,.4); }
+  button.chip.tone-buff.on { background:#0c241c; border-color:#7dffd1; box-shadow:0 0 14px rgba(80,255,190,.45); }
+  button.chip.tone-debuff.on { background:#2a1018; border-color:#ff8fb8; box-shadow:0 0 14px rgba(255,80,130,.5); }
+  button.chip.tone-other.on { background:#062033; border-color:#3ecbff; box-shadow:0 0 14px rgba(62,203,255,.45); }
   @keyframes pulse { 50% { transform:translateY(-1px); } }
   @keyframes burn { 50% { box-shadow:0 -10px 20px rgba(255,80,0,.75); } }
   @keyframes drip { 50% { box-shadow:inset 0 -10px 0 rgba(80,200,40,.45); } }
