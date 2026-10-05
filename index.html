@@ -181,8 +181,11 @@ const groups = [
     ["2к6д","ᛞᛒ","2к6 в ход",4],["3к6д","ᛞᚦ","3к6 в ход",5],["4к6д","ᛞᚠ","4к6 в ход",7]
   ]},
   { id:"dice", title:"Кубики урона", multi:false, items:[
-    ["нетк","","без кубиков",0],["1к6","ᛏᛁ","1к6",1],["2к6","ᛏᚢ","2к6",2],["3к6","ᛏᚦ","3к6",3],["4к6","ᛏᚠ","4к6",4],
-    ["5к6","ᛏᚱ","5к6",5],["6к6","ᛏᛊ","6к6",6],["8к6","ᛏᚨ","8к6",8],["10к6","ᛏᛏ","10к6",10],["12к6","ᛏᛟ","12к6",12]
+    ["нетк","","без кубиков",0],
+    ["1к6","ᛏᛁ","1к6",1],["2к6","ᛏᚢ","2к6",2],["3к6","ᛏᚦ","3к6",3],["4к6","ᛏᚠ","4к6",4],["5к6","ᛏᚱ","5к6",5],
+    ["6к6","ᛏᛊ","6к6",6],["7к6","ᛏᛉ","7к6",7],["8к6","ᛏᚨ","8к6",8],["9к6","ᛏᚾ","9к6",9],["10к6","ᛏᛏ","10к6",10],
+    ["11к6","ᛏᛒ","11к6",11],["12к6","ᛏᛟ","12к6",12],["13к6","ᛏᛗ","13к6",13],["14к6","ᛏᛚ","14к6",14],["15к6","ᛏᚺ","15к6",15],
+    ["16к6","ᛏᛞ","16к6",16],["17к6","ᛏᛈ","17к6",17],["18к6","ᛏᛃ","18к6",18],["19к6","ᛏᛜ","19к6",19],["20к6","ᛏᛇ","20к6",20]
   ]},
   { id:"face", title:"Грань", multi:false, items:[["к6","","к6",0],["к8","ᚢ","к8",1],["к10","ᛏ","к10",2],["к12","ᛞ","к12",4]]},
   { id:"shape", title:"Форма", hint:"Клинок — как «зелёное пламя»: часть действия, удар оружием ближнего боя.", multi:false, items:[
@@ -409,12 +412,11 @@ function paintSplit(on, diceN) {
   const box = document.getElementById("split-box");
   if (!box) return;
   box.style.display = on ? "" : "none";
-  document.querySelectorAll("button.chip[data-group='face']").forEach(b => { b.disabled = on; });
   if (!on) return;
   const rows = document.getElementById("split-rows");
   rows.innerHTML = "";
   state.dmg.forEach(id => {
-    if (!state.split[id]) state.split[id] = { n: 1, face: "к6" };
+    if (!state.split[id]) state.split[id] = { n: 1, face: state.face || "к6" };
     const item = find("dmg", id);
     const row = document.createElement("div");
     row.className = "group";
@@ -470,8 +472,21 @@ function render() {
   state.fx.forEach(id => push(find("fx", id)));
   if (state.fx.length && state.amp === "УсилЭф") push(find("amp", "УсилЭф"));
   const dice = find("dice", state.dice), face = find("face", state.face);
-  const diceN = {нетк:0,"1к6":1,"2к6":2,"3к6":3,"4к6":4,"5к6":5,"6к6":6,"8к6":8,"10к6":10,"12к6":12}[state.dice] || 0;
+  const diceN = state.dice === "нетк" ? 0 : (parseInt(state.dice, 10) || 0);
   const splitOn = state.dmg.length > 1 && diceN > 1;
+  const splitKey = state.dice + "|" + state.dmg.join(",");
+  if (splitOn && state._splitKey !== splitKey) {
+    state._splitKey = splitKey;
+    const types = state.dmg.length;
+    const baseN = Math.floor(diceN / types);
+    let rest = diceN % types;
+    state.dmg.forEach(id => {
+      const n = baseN + (rest > 0 ? 1 : 0);
+      if (rest > 0) rest -= 1;
+      if (!state.split[id]) state.split[id] = { n: Math.max(1, n), face: state.face || "к6" };
+      else state.split[id].n = Math.max(1, n);
+    });
+  }
   if (dice[0] !== "нетк" && !splitOn) {
     base += dice[3] + (face[0] === "к6" ? 0 : face[3]);
     parts.push(dice[1] + (face[0] === "к6" ? "" : face[1]));
@@ -480,8 +495,15 @@ function render() {
   if (splitOn) {
     base += dice[3];
     const faces = {к6:0, к8:1, к10:2, к12:4};
+    if (state._faceApplied !== state.face) {
+      state._faceApplied = state.face;
+      state.dmg.forEach(id => {
+        if (!state.split[id]) state.split[id] = { n: 1, face: state.face };
+        state.split[id].face = state.face;
+      });
+    }
     state.dmg.forEach(id => {
-      if (!state.split[id]) state.split[id] = { n: 1, face: "к6" };
+      if (!state.split[id]) state.split[id] = { n: 1, face: state.face || "к6" };
       const share = state.split[id];
       base += faces[share.face] || 0;
       const item = find("dmg", id);
