@@ -490,7 +490,7 @@ function render() {
   document.getElementById("level").textContent = state.cantrip ? "0" : String(level);
   document.getElementById("points").textContent = state.cantrip
     ? `${points} очков${scale ? ", на этом уровне +" + scale + " к кубику" : ""}`
-    : `${points} очков, сырая мощь ${raw} круга, своя печать +4`;
+    : `${points} очков — ${level} круг`;
   document.getElementById("formula").textContent = parts.join(" ") || "—";
   document.getElementById("gloss").textContent = gloss.join(" · ");
   document.getElementById("components").textContent = "Компоненты: " + comps;
