@@ -257,6 +257,7 @@ groups.forEach(g => state[g.id] = g.multi ? [] : g.items[0][0]);
 state.cantrip = false;
 state.caster = 5;
 state.half = false;
+state.split = {};
 const builder = document.getElementById("builder");
 const mode = document.createElement("div");
 mode.className = "group";
@@ -266,22 +267,36 @@ builder.appendChild(mode);
   const b = document.createElement("button");
   b.className = "chip" + (id==="spell"?" on":"");
   b.textContent = label;
-  b.onclick = () => { state.cantrip = id==="cantrip"; [...mode.querySelectorAll("button")].forEach(c=>c.classList.remove("on")); b.classList.add("on"); render(); };
+  b.onclick = () => {
+    state.cantrip = id==="cantrip";
+    if (state.cantrip && ![1,5,11,17].includes(state.caster)) state.caster = 1;
+    [...mode.querySelectorAll("#modechips button")].forEach(c=>c.classList.remove("on"));
+    b.classList.add("on");
+    paintLevels();
+    render();
+  };
   mode.querySelector("#modechips").appendChild(b);
 });
-const lvl = document.createElement("div");
-[1,2,3,4,5,6,7,8,9,10,11,17,20].forEach(n => {
-  const b = document.createElement("button");
-  b.className = "chip" + (n === 5 ? " on" : "");
-  b.textContent = String(n);
-  b.onclick = () => { state.caster = n; [...document.querySelectorAll("#lvlchips button")].forEach(c => c.classList.remove("on")); b.classList.add("on"); render(); };
-  document.getElementById("lvlchips").appendChild(b);
-});
-const half = document.createElement("button");
-half.className = "chip";
-half.textContent = "Полукастер";
-half.onclick = () => { state.half = !state.half; half.classList.toggle("on", state.half); render(); };
-document.getElementById("lvlchips").appendChild(half);
+function paintLevels() {
+  const box = document.getElementById("lvlchips");
+  box.innerHTML = "";
+  const levels = state.cantrip ? [1,5,11,17] : [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20];
+  levels.forEach(n => {
+    const b = document.createElement("button");
+    b.className = "chip" + (n === state.caster ? " on" : "");
+    b.textContent = String(n);
+    b.onclick = () => { state.caster = n; paintLevels(); render(); };
+    box.appendChild(b);
+  });
+  if (!state.cantrip) {
+    const half = document.createElement("button");
+    half.className = "chip" + (state.half ? " on" : "");
+    half.textContent = "Полукастер";
+    half.onclick = () => { state.half = !state.half; half.classList.toggle("on", state.half); render(); };
+    box.appendChild(half);
+  }
+}
+paintLevels();
 groups.forEach(g => {
   if (["undead","kind","summon"].includes(g.id)) return;
   const wrap = document.createElement("div");
@@ -314,6 +329,11 @@ const servantBtn = document.createElement("div");
 servantBtn.className = "group";
 servantBtn.innerHTML = "<h2>Слуга</h2><p class='hint'>Нежить или призванное существо. Вид и опасность выбираются в одном окне и оба обязательны.</p><div class='chips'><button class='chip' id='open-servant' type='button'>Выбрать слугу</button></div><p class='meta' id='servant-label'>Слуга не выбран</p>";
 builder.appendChild(servantBtn);
+const splitBox = document.createElement("div");
+splitBox.className = "group";
+splitBox.id = "split-box";
+splitBox.innerHTML = "<h2>Делёж урона</h2><p class='hint'>Общая горсть одна. Каждому типу хотя бы одна. Грань платит каждая доля сама. Сопротивление снимается только со своей доли.</p><div id='split-rows'></div>";
+builder.appendChild(splitBox);
 const pick = { mode: "undead", kind: "", cr: "" };
 function paintPick() {
   document.getElementById("tab-undead").classList.toggle("on", pick.mode === "undead");
@@ -385,6 +405,40 @@ function levelOf(points) {
 function ownLevel(points) {
   return levelOf(points);
 }
+function paintSplit(on, diceN) {
+  const box = document.getElementById("split-box");
+  if (!box) return;
+  box.style.display = on ? "" : "none";
+  document.querySelectorAll("button.chip[data-group='face']").forEach(b => { b.disabled = on; });
+  if (!on) return;
+  const rows = document.getElementById("split-rows");
+  rows.innerHTML = "";
+  state.dmg.forEach(id => {
+    if (!state.split[id]) state.split[id] = { n: 1, face: "к6" };
+    const item = find("dmg", id);
+    const row = document.createElement("div");
+    row.className = "group";
+    row.innerHTML = "<p class='hint'>" + item[2] + "</p>";
+    const chips = document.createElement("div");
+    chips.className = "chips";
+    for (let n = 1; n <= diceN; n++) {
+      const b = document.createElement("button");
+      b.className = "chip" + (state.split[id].n === n ? " on" : "");
+      b.textContent = String(n);
+      b.onclick = () => { state.split[id].n = n; render(); };
+      chips.appendChild(b);
+    }
+    ["к6","к8","к10","к12"].forEach(face => {
+      const b = document.createElement("button");
+      b.className = "chip" + (state.split[id].face === face ? " on" : "");
+      b.textContent = face;
+      b.onclick = () => { state.split[id].face = face; render(); };
+      chips.appendChild(b);
+    });
+    row.appendChild(chips);
+    rows.appendChild(row);
+  });
+}
 function render() {
   const blade = state.shape === "Клинок";
   if (blade) state.range = "Кас";
@@ -412,13 +466,28 @@ function render() {
     gloss.push(item[2]);
   };
   state.dmg.forEach(id => push(find("dmg", id)));
+  if (state.dmg.length > 1) base += (state.dmg.length - 1) * 2;
   state.fx.forEach(id => push(find("fx", id)));
   if (state.fx.length && state.amp === "УсилЭф") push(find("amp", "УсилЭф"));
   const dice = find("dice", state.dice), face = find("face", state.face);
-  if (dice[0] !== "нетк") {
+  const diceN = {нетк:0,"1к6":1,"2к6":2,"3к6":3,"4к6":4,"5к6":5,"6к6":6,"8к6":8,"10к6":10,"12к6":12}[state.dice] || 0;
+  const splitOn = state.dmg.length > 1 && diceN > 1;
+  if (dice[0] !== "нетк" && !splitOn) {
     base += dice[3] + (face[0] === "к6" ? 0 : face[3]);
     parts.push(dice[1] + (face[0] === "к6" ? "" : face[1]));
     gloss.push(dice[2].replace("к6", face[2]));
+  }
+  if (splitOn) {
+    base += dice[3];
+    const faces = {к6:0, к8:1, к10:2, к12:4};
+    state.dmg.forEach(id => {
+      if (!state.split[id]) state.split[id] = { n: 1, face: "к6" };
+      const share = state.split[id];
+      base += faces[share.face] || 0;
+      const item = find("dmg", id);
+      gloss.push(item[2] + " " + share.n + share.face);
+      parts.push((item[1] || "") + "ᛏ" + share.face.replace("к",""));
+    });
   }
   push(find("shape", state.shape));
   if (blade) state.blade.forEach(id => push(find("blade", id)));
@@ -456,7 +525,6 @@ function render() {
   const raw = state.cantrip ? 0 : levelOf(points);
   const cap = Math.max(1, state.half ? Math.floor(state.caster / 2) : state.caster);
   const overLevel = !state.cantrip && level > cap;
-  const diceN = {нетк:0,"1к6":1,"2к6":2,"3к6":3,"4к6":4,"5к6":5,"6к6":6,"8к6":8,"10к6":10,"12к6":12}[state.dice] || 0;
   const areaCap = !area || state.size === "Малый" ? 99 : raw <= 2 ? 6 : raw <= 4 ? 8 : raw <= 6 ? 10 : 12;
   const quick = ["Бонус","Реак"].includes(state.time);
   const scale = state.cantrip ? (state.caster >= 17 ? 3 : state.caster >= 11 ? 2 : state.caster >= 5 ? 1 : 0) : Math.max(0, level - levelOf(Math.max(points, 1)));
@@ -487,7 +555,7 @@ function render() {
   }
   document.getElementById("level").textContent = state.cantrip ? "0" : String(level);
   document.getElementById("points").textContent = state.cantrip
-    ? `${points} очков${scale ? ", на этом уровне +" + scale + " к кубику" : ""}`
+    ? `${points} очков из ${state.caster >= 17 ? 6 : state.caster >= 11 ? 5 : state.caster >= 5 ? 4 : 3}${scale ? ", +" + scale + " к кубику" : ""}`
     : `${points} очков — ${level} круг`;
   document.getElementById("formula").textContent = parts.join(" ") || "—";
   document.getElementById("gloss").textContent = gloss.join(" · ");
@@ -497,7 +565,8 @@ function render() {
   if (blade && !["Дейст","Атака"].includes(state.time)) warns.push("Клинок накладывается действием или как часть действия атаки.");
   if (!blade && state.blade.length) warns.push("Печати клинка не работают без формы «на оружие».");
   if (state.cantrip) {
-    if (points > 3) warns.push("Сейчас " + points + " очков — заговор так не собрать. Убери руны или возьми слово, жест и материю.");
+    const cantripCap = state.caster >= 17 ? 6 : state.caster >= 11 ? 5 : state.caster >= 5 ? 4 : 3;
+    if (points > cantripCap) warns.push("Сейчас " + points + " очков — на " + state.caster + " уровне заговор берёт не больше " + cantripCap + ".");
   }
   if (strong.length > 2) warns.push("Больше двух сильных эффектов: третий и далее стоят ещё +5. Сейчас это уже в сумме.");
   if (strong.length && targetExtra) gloss.push("сильный эффект на несколько целей: +" + targetExtra + " сверх обычной цены");
@@ -517,6 +586,11 @@ function render() {
   if (state.save === "Авто" && (state.fx.includes("Паралич") || state.fx.includes("Окамен")) && area && state.size !== "Малый")
     warns.push("Запретная связка: автоэффект + паралич или окаменение + не малая область.");
   if (state.half === "Половина" && !["Ловк","СилаС","Тело","Мудр","Инт","Хар"].includes(state.save)) warns.push("Половина урона имеет смысл только при спасброске.");
+  if (splitOn) {
+    const sum = state.dmg.reduce((s, id) => s + ((state.split[id] && state.split[id].n) || 0), 0);
+    if (sum !== diceN) warns.push("Доли урона должны сойтись с купленной горстью: сейчас " + sum + " из " + diceN + ".");
+  }
+  paintSplit(splitOn, diceN);
   const note = [
     document.getElementById("name").value.trim() || "Без имени",
     (state.cantrip ? "Заговор" : "Круг " + level) + ", " + find("school", state.school)[2],
