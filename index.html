@@ -261,6 +261,7 @@ state.cantrip = false;
 state.caster = 5;
 state.half = false;
 state.split = {};
+state.dotType = "";
 const builder = document.getElementById("builder");
 const mode = document.createElement("div");
 mode.className = "group";
@@ -335,7 +336,7 @@ builder.appendChild(servantBtn);
 const splitBox = document.createElement("div");
 splitBox.className = "group";
 splitBox.id = "split-box";
-splitBox.innerHTML = "<h2>Делёж урона</h2><p class='hint'>Общая горсть одна. Каждому типу хотя бы одна. Грань платит каждая доля сама. Сопротивление снимается только со своей доли.</p><div id='split-rows'></div>";
+splitBox.innerHTML = "<h2>Делёж урона</h2><p class='hint'>Старший — первый выбранный тип, не первый в списке кнопок. Числа — доли купленной горсти, второй раз не стоят. Грань стоит с каждой горсти доли. Ход бьёт одним выбранным типом и горсть удара не забирает.</p><div id='split-rows'></div>";
 builder.appendChild(splitBox);
 const pick = { mode: "undead", kind: "", cr: "" };
 function paintPick() {
@@ -411,35 +412,57 @@ function ownLevel(points) {
 function paintSplit(on, diceN) {
   const box = document.getElementById("split-box");
   if (!box) return;
-  box.style.display = on ? "" : "none";
-  if (!on) return;
+  const dotOn = state.dot !== "нетД" && state.dmg.length > 1;
+  box.style.display = (on || dotOn) ? "" : "none";
+  if (!on && !dotOn) return;
   const rows = document.getElementById("split-rows");
   rows.innerHTML = "";
-  state.dmg.forEach(id => {
-    if (!state.split[id]) state.split[id] = { n: 1, face: state.face || "к6" };
-    const item = find("dmg", id);
+  const faceCost = {к6:0, к8:1, к10:2, к12:4};
+  if (on) {
+    state.dmg.forEach(id => {
+      if (!state.split[id]) state.split[id] = { n: 1, face: state.face || "к6" };
+      const item = find("dmg", id);
+      const row = document.createElement("div");
+      row.className = "group";
+      row.innerHTML = "<p class='hint'>" + item[2] + (id === state.dmg[0] ? " — старший" : "") + "</p>";
+      const chips = document.createElement("div");
+      chips.className = "chips";
+      for (let n = 1; n <= diceN; n++) {
+        const b = document.createElement("button");
+        b.className = "chip" + (state.split[id].n === n ? " on" : "");
+        b.textContent = String(n);
+        b.onclick = () => { state.split[id].n = n; render(); };
+        chips.appendChild(b);
+      }
+      ["к6","к8","к10","к12"].forEach(face => {
+        const b = document.createElement("button");
+        b.className = "chip" + (state.split[id].face === face ? " on" : "");
+        const cost = faceCost[face] * state.split[id].n;
+        b.textContent = face + (cost ? " +" + cost : " 0");
+        b.onclick = () => { state.split[id].face = face; render(); };
+        chips.appendChild(b);
+      });
+      row.appendChild(chips);
+      rows.appendChild(row);
+    });
+  }
+  if (dotOn) {
+    if (!state.dmg.includes(state.dotType)) state.dotType = state.dmg[0];
     const row = document.createElement("div");
     row.className = "group";
-    row.innerHTML = "<p class='hint'>" + item[2] + "</p>";
+    row.innerHTML = "<p class='hint'>Урон каждый ход — один тип, горсть удара не берёт</p>";
     const chips = document.createElement("div");
     chips.className = "chips";
-    for (let n = 1; n <= diceN; n++) {
+    state.dmg.forEach(id => {
       const b = document.createElement("button");
-      b.className = "chip" + (state.split[id].n === n ? " on" : "");
-      b.textContent = String(n);
-      b.onclick = () => { state.split[id].n = n; render(); };
-      chips.appendChild(b);
-    }
-    ["к6","к8","к10","к12"].forEach(face => {
-      const b = document.createElement("button");
-      b.className = "chip" + (state.split[id].face === face ? " on" : "");
-      b.textContent = face;
-      b.onclick = () => { state.split[id].face = face; render(); };
+      b.className = "chip" + (state.dotType === id ? " on" : "");
+      b.textContent = find("dmg", id)[2];
+      b.onclick = () => { state.dotType = id; render(); };
       chips.appendChild(b);
     });
     row.appendChild(chips);
     rows.appendChild(row);
-  });
+  }
 }
 function render() {
   const blade = state.shape === "Клинок";
@@ -488,7 +511,8 @@ function render() {
     });
   }
   if (dice[0] !== "нетк" && !splitOn) {
-    base += dice[3] + (face[0] === "к6" ? 0 : face[3]);
+    const faceCost = face[0] === "к6" ? 0 : face[3];
+    base += dice[3] + faceCost * diceN;
     parts.push(dice[1] + (face[0] === "к6" ? "" : face[1]));
     gloss.push(dice[2].replace("к6", face[2]));
   }
@@ -505,7 +529,7 @@ function render() {
     state.dmg.forEach(id => {
       if (!state.split[id]) state.split[id] = { n: 1, face: state.face || "к6" };
       const share = state.split[id];
-      base += faces[share.face] || 0;
+      base += (faces[share.face] || 0) * share.n;
       const item = find("dmg", id);
       gloss.push(item[2] + " " + share.n + share.face);
       parts.push((item[1] || "") + "ᛏ" + share.face.replace("к",""));
@@ -593,6 +617,9 @@ function render() {
   if (strong.length > 2) warns.push("Больше двух сильных эффектов: третий и далее стоят ещё +5. Сейчас это уже в сумме.");
   if (strong.length && targetExtra) gloss.push("сильный эффект на несколько целей: +" + targetExtra + " сверх обычной цены");
   if (area && diceN > areaCap) warns.push("Область этого круга не несёт больше " + areaCap + "к6. Уменьши кубики или круг.");
+  const diceCap = state.cantrip ? 2 : level >= 9 ? 20 : level >= 7 ? 16 : level >= 5 ? 12 : level >= 3 ? 8 : 6;
+  if (diceN > diceCap) warns.push("Этот круг не несёт больше " + diceCap + " горстей. Сейчас " + diceN + ".");
+  if (state.dot !== "нетД" && state.dmg.length > 1) gloss.push("каждый ход бьёт только типом: " + find("dmg", state.dmg.includes(state.dotType) ? state.dotType : state.dmg[0])[2]);
   if (quick && (diceN > 6 || state.fx.includes("Паралич") || state.fx.includes("Окамен"))) warns.push("Бонусное действие и реакция: не больше 6к6 и без паралича с окаменением.");
   if (state.time === "Ритуал") warns.push("Ритуал нельзя метать в бою.");
   if (overLevel) warns.push("Круг " + level + " выше доступного: заклинатель " + state.caster + (state.half ? " (полукастер)" : "") + " берёт не выше " + cap + ".");
