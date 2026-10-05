@@ -352,7 +352,7 @@ state.dotType = "";
 const builder = document.getElementById("builder");
 const mode = document.createElement("div");
 mode.className = "group";
-mode.innerHTML = "<h2>Режим</h2><div class='chips' id='modechips'></div><p class='hint'>Уровень заклинателя режет круг формулы. Полукастер берёт половину.</p><div class='chips' id='lvlchips'></div>";
+mode.innerHTML = "<h2>Режим</h2><div class='chips' id='modechips'></div><p class='hint'>Потолок как в книге: волшебник открывает круг через уровень, полукастер не выше 5 и с 2 уровня.</p><div class='chips' id='lvlchips'></div>";
 builder.appendChild(mode);
 [["spell","Заклинание"],["cantrip","Заговор"]].forEach(([id,label]) => {
   const b = document.createElement("button");
@@ -508,6 +508,10 @@ function levelOf(points) {
   if (points <= 38) return 7;
   if (points <= 44) return 8;
   return 9;
+}
+function slotCap(level, half) {
+  if (half) return level < 2 ? 0 : level < 5 ? 1 : level < 9 ? 2 : level < 13 ? 3 : level < 17 ? 4 : 5;
+  return level < 3 ? 1 : level < 5 ? 2 : level < 7 ? 3 : level < 9 ? 4 : level < 11 ? 5 : level < 13 ? 6 : level < 15 ? 7 : level < 17 ? 8 : 9;
 }
 function ownLevel(points) {
   return levelOf(points);
@@ -698,11 +702,11 @@ function render() {
     matCut = Math.max(mat[3], -cap);
   }
   if (state.cantrip && state.dmg.includes("СилаУ")) base -= 2;
-  if (state.cantrip && state.range === "Дал") base -= 3;
+  if (state.cantrip && state.range === "Дал") base -= 2;
   const points = Math.max(state.cantrip ? 0 : 1, base + matCut);
   let level = state.cantrip ? 0 : ownLevel(points);
   const raw = state.cantrip ? 0 : levelOf(points);
-  const cap = Math.max(1, state.half ? Math.floor(state.caster / 2) : state.caster);
+  const cap = slotCap(state.caster, state.half);
   const overLevel = !state.cantrip && level > cap;
   const areaCap = !area || sizeFt(state.size) <= 15 ? 99 : raw <= 2 ? 6 : raw <= 4 ? 8 : raw <= 6 ? 10 : 12;
   const quick = ["Бонус","Реак"].includes(state.time);
@@ -755,7 +759,7 @@ function render() {
   if (state.dot !== "нетД" && state.dmg.length > 1) gloss.push("каждый ход бьёт только типом: " + find("dmg", state.dmg.includes(state.dotType) ? state.dotType : state.dmg[0])[2]);
   if (quick && (diceN > 6 || state.fx.includes("Паралич") || state.fx.includes("Окамен"))) warns.push("Бонусное действие и реакция: не больше 6к6 и без паралича с окаменением.");
   if (state.time === "Ритуал") warns.push("Ритуал нельзя метать в бою.");
-  if (overLevel) warns.push("Круг " + level + " выше доступного: заклинатель " + state.caster + (state.half ? " (полукастер)" : "") + " берёт не выше " + cap + ".");
+  if (overLevel) warns.push(cap === 0 ? "На 1 уровне полукастер ещё не берёт ячейки." : "Круг " + level + " выше доступного: заклинатель " + state.caster + (state.half ? " (полукастер)" : "") + " берёт не выше " + cap + ".");
   if ((state.fx.includes("Паралич") || state.fx.includes("Окамен")) && long)
     gloss.push("в конце каждого хода цель повторяет спасбросок");
   if (state.dur === "Пост") gloss.push("постоянно, пока не рассеяно, концентрации нет");
