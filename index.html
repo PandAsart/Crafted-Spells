@@ -45,33 +45,6 @@
   button.chip.locked { opacity:.35; }
   button.chip:disabled { opacity:.28; cursor:not-allowed; }
   .rune { font-family:"Noto Sans Runic","Segoe UI Symbol",sans-serif; margin-right:5px; color:var(--gold); }
-  .chip.on { animation:pulse 1.2s ease-in-out infinite; }
-  button.chip.tone-fire.on { background:#2a1208; border-color:#ff6a2a; color:#ffd7c2; box-shadow:0 0 18px rgba(255,90,20,.85); animation:burn 0.9s ease-in-out infinite; }
-  button.chip.tone-poison.on { background:#10240c; border-color:#7dff4a; color:#dfffcb; box-shadow:0 0 16px rgba(80,220,40,.7); animation:drip 1.2s ease-in infinite; }
-  button.chip.tone-cold.on { background:#0c1c28; border-color:#bfe9ff; color:#eef9ff; box-shadow:0 0 16px rgba(180,230,255,.7); animation:frost 1.3s ease-in-out infinite; }
-  button.chip.tone-lightning.on { background:#2a2408; border-color:#ffe56a; color:#fff6c2; box-shadow:0 0 18px rgba(255,220,60,.75); animation:flash 0.7s linear infinite; }
-  button.chip.tone-necro.on { background:#1a1028; border-color:#c9a6ff; color:#efe4ff; box-shadow:0 0 16px rgba(160,100,255,.65); animation:pulse 1.4s ease-in-out infinite; }
-  button.chip.tone-heal.on { background:#163028; border-color:#b6ffe0; color:#ffffff; box-shadow:0 0 16px rgba(180,255,220,.55); animation:pulse 1.5s ease-in-out infinite; }
-  button.chip.tone-fear.on { background:#1c1c24; border-color:#b7b7c4; color:#d9d9e2; box-shadow:0 0 12px rgba(180,180,200,.4); }
-  button.chip.tone-buff.on { background:#0c241c; border-color:#7dffd1; box-shadow:0 0 14px rgba(80,255,190,.45); }
-  button.chip.tone-debuff.on { background:#2a1018; border-color:#ff8fb8; box-shadow:0 0 14px rgba(255,80,130,.5); }
-  button.chip.tone-other.on { background:#062033; border-color:#3ecbff; box-shadow:0 0 14px rgba(62,203,255,.45); }
-  @keyframes pulse { 50% { transform:translateY(-1px); } }
-  @keyframes burn { 50% { box-shadow:0 -10px 20px rgba(255,80,0,.75); } }
-  @keyframes drip { 50% { box-shadow:inset 0 -10px 0 rgba(80,200,40,.45); } }
-  @keyframes frost { 50% { box-shadow:inset 0 0 14px rgba(210,245,255,.6); } }
-  @keyframes flash { 40% { filter:brightness(1.6); } }
-  .sig-fire { color:#ff6a2a; text-shadow:0 0 10px rgba(255,90,20,.7); }
-  .sig-poison { color:#8dff55; text-shadow:0 0 10px rgba(80,220,40,.6); }
-  .sig-cold { color:#c8f4ff; text-shadow:0 0 10px rgba(180,230,255,.7); }
-  .sig-lightning { color:#ffe56a; text-shadow:0 0 10px rgba(255,220,60,.7); }
-  .sig-necro { color:#c9a6ff; text-shadow:0 0 10px rgba(160,100,255,.6); }
-  .sig-heal { color:#f4fff8; text-shadow:0 0 10px rgba(255,255,255,.45); }
-  .sig-fear { color:#b7b7c4; }
-  @keyframes burn { 50% { box-shadow:0 -8px 18px rgba(255,80,0,.65); } }
-  @keyframes drip { 50% { box-shadow:inset 0 -8px 0 rgba(80,200,40,.35); } }
-  @keyframes frost { 50% { box-shadow:inset 0 0 12px rgba(210,245,255,.45); } }
-  @keyframes flash { 40% { filter:brightness(1.5); } }
   .cost { display:inline-block; margin-left:6px; padding:0 6px; border-radius:999px; background:rgba(62,203,255,.1); color:var(--gold); font-size:11px; }
   .seal { text-align:center; padding:8px 8px 14px; border-bottom:1px solid rgba(62,203,255,.18); margin-bottom:12px; }
   .seal span { letter-spacing:.28em; font-size:11px; color:var(--muted); text-transform:uppercase; }
@@ -424,9 +397,7 @@ groups.forEach(g => {
   chips.className = "chips";
   g.items.forEach(item => {
     const b = document.createElement("button");
-    const toneOfChip = { Пламя:"fire", ЯдУрон:"poison", ЯдЭф:"poison", Хлад:"cold", Молния:"lightning", Некро:"necro", Леч:"heal", Страх:"fear" };
-    const groupTone = { buff:"buff", debuff:"debuff", dmg:"other", fx:"other" };
-    b.className = "chip tone-" + (toneOfChip[item[0]] || groupTone[g.id] || "other");
+    b.className = "chip";
     b.dataset.group = g.id;
     b.dataset.id = item[0];
     const sign = item[3] > 0 ? "+" : "";
@@ -624,17 +595,12 @@ function render() {
     if (state.face === "к12") state.face = "к10";
     if (state.comp === "noAll") state.comp = "обыч";
   }
-  const parts = [], gloss = [], colored = [];
-  const toneOf = { Пламя:"fire", ЯдУрон:"poison", Хлад:"cold", Молния:"lightning", Некро:"necro", Леч:"heal", Страх:"fear", Ацид:"poison", Сияние:"lightning" };
+  const parts = [], gloss = [];
   let base = 0;
   const push = (item, glue) => {
     if (!item || item[0] === "нетк" || item[0] === "к6" || item[0] === "обыч" || item[0] === "нетУ" || item[0] === "нетА" || item[0] === "полный" || item[0] === "нетП" || item[0] === "1ц" || item[0] === "Любые" || item[0] === "нетЛ" || item[0] === "ЛюбаяВ" || item[0] === "нетД" || item[0] === "нетМ" || item[0] === "нетПр" || item[0] === "нетН" || item[0] === "нетВида") return;
     base += item[3];
     if (item[1]) {
-      const tone = toneOf[item[0]] || "";
-      const bit = tone ? `<span class="sig-${tone}">${item[1]}</span>` : item[1];
-      if (glue && colored.length) colored[colored.length - 1] += bit;
-      else colored.push(bit);
       if (glue && parts.length) parts[parts.length - 1] += item[1];
       else parts.push(item[1]);
     }
@@ -774,7 +740,7 @@ function render() {
   document.getElementById("points").textContent = state.cantrip
     ? `${points} очков из ${state.caster >= 17 ? 6 : state.caster >= 11 ? 5 : state.caster >= 5 ? 4 : 3}${scale ? ", +" + scale + " к кубику" : ""}`
     : `${points} очков — ${level} круг`;
-  document.getElementById("formula").innerHTML = colored.join(" ") || "—";
+  document.getElementById("formula").textContent = parts.join(" ") || "—";
   document.getElementById("gloss").textContent = gloss.join(" · ");
   document.getElementById("components").textContent = "Компоненты: " + comps;
   document.getElementById("material").textContent = matText;
