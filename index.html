@@ -45,6 +45,21 @@
   button.chip.locked { opacity:.35; }
   button.chip:disabled { opacity:.28; cursor:not-allowed; }
   .rune { font-family:"Noto Sans Runic","Segoe UI Symbol",sans-serif; margin-right:5px; color:var(--gold); }
+  .tone-fire.on { border-color:#ff6a2a; box-shadow:0 0 16px rgba(255,90,20,.55); animation:burn 1.1s ease-in-out infinite; }
+  .tone-poison.on { border-color:#7dff4a; box-shadow:0 0 14px rgba(80,220,40,.4); animation:drip 1.4s ease-in infinite; }
+  .tone-cold.on { border-color:#bfe9ff; box-shadow:0 0 14px rgba(180,230,255,.45); animation:frost 1.6s ease-in-out infinite; }
+  .tone-lightning.on { border-color:#ffe56a; box-shadow:0 0 16px rgba(255,220,60,.5); animation:flash 0.8s linear infinite; }
+  .sig-fire { color:#ff6a2a; text-shadow:0 0 10px rgba(255,90,20,.7); }
+  .sig-poison { color:#8dff55; text-shadow:0 0 10px rgba(80,220,40,.6); }
+  .sig-cold { color:#c8f4ff; text-shadow:0 0 10px rgba(180,230,255,.7); }
+  .sig-lightning { color:#ffe56a; text-shadow:0 0 10px rgba(255,220,60,.7); }
+  .sig-necro { color:#c9a6ff; text-shadow:0 0 10px rgba(160,100,255,.6); }
+  .sig-heal { color:#f4fff8; text-shadow:0 0 10px rgba(255,255,255,.45); }
+  .sig-fear { color:#b7b7c4; }
+  @keyframes burn { 50% { box-shadow:0 -8px 18px rgba(255,80,0,.65); } }
+  @keyframes drip { 50% { box-shadow:inset 0 -8px 0 rgba(80,200,40,.35); } }
+  @keyframes frost { 50% { box-shadow:inset 0 0 12px rgba(210,245,255,.45); } }
+  @keyframes flash { 40% { filter:brightness(1.5); } }
   .cost { display:inline-block; margin-left:6px; padding:0 6px; border-radius:999px; background:rgba(62,203,255,.1); color:var(--gold); font-size:11px; }
   .seal { text-align:center; padding:8px 8px 14px; border-bottom:1px solid rgba(62,203,255,.18); margin-bottom:12px; }
   .seal span { letter-spacing:.28em; font-size:11px; color:var(--muted); text-transform:uppercase; }
@@ -397,7 +412,8 @@ groups.forEach(g => {
   chips.className = "chips";
   g.items.forEach(item => {
     const b = document.createElement("button");
-    b.className = "chip";
+    const toneOfChip = { Пламя:"fire", ЯдУрон:"poison", Хлад:"cold", Молния:"lightning", Некро:"necro", Леч:"heal", Страх:"fear" };
+    b.className = "chip" + (toneOfChip[item[0]] ? " tone-" + toneOfChip[item[0]] : "");
     b.dataset.group = g.id;
     b.dataset.id = item[0];
     const sign = item[3] > 0 ? "+" : "";
@@ -595,12 +611,17 @@ function render() {
     if (state.face === "к12") state.face = "к10";
     if (state.comp === "noAll") state.comp = "обыч";
   }
-  const parts = [], gloss = [];
+  const parts = [], gloss = [], colored = [];
+  const toneOf = { Пламя:"fire", ЯдУрон:"poison", Хлад:"cold", Молния:"lightning", Некро:"necro", Леч:"heal", Страх:"fear", Ацид:"poison", Сияние:"lightning" };
   let base = 0;
   const push = (item, glue) => {
     if (!item || item[0] === "нетк" || item[0] === "к6" || item[0] === "обыч" || item[0] === "нетУ" || item[0] === "нетА" || item[0] === "полный" || item[0] === "нетП" || item[0] === "1ц" || item[0] === "Любые" || item[0] === "нетЛ" || item[0] === "ЛюбаяВ" || item[0] === "нетД" || item[0] === "нетМ" || item[0] === "нетПр" || item[0] === "нетН" || item[0] === "нетВида") return;
     base += item[3];
     if (item[1]) {
+      const tone = toneOf[item[0]] || "";
+      const bit = tone ? `<span class="sig-${tone}">${item[1]}</span>` : item[1];
+      if (glue && colored.length) colored[colored.length - 1] += bit;
+      else colored.push(bit);
       if (glue && parts.length) parts[parts.length - 1] += item[1];
       else parts.push(item[1]);
     }
@@ -740,7 +761,7 @@ function render() {
   document.getElementById("points").textContent = state.cantrip
     ? `${points} очков из ${state.caster >= 17 ? 6 : state.caster >= 11 ? 5 : state.caster >= 5 ? 4 : 3}${scale ? ", +" + scale + " к кубику" : ""}`
     : `${points} очков — ${level} круг`;
-  document.getElementById("formula").textContent = parts.join(" ") || "—";
+  document.getElementById("formula").innerHTML = colored.join(" ") || "—";
   document.getElementById("gloss").textContent = gloss.join(" · ");
   document.getElementById("components").textContent = "Компоненты: " + comps;
   document.getElementById("material").textContent = matText;
