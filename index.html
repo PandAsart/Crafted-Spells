@@ -88,6 +88,8 @@
     </div>
     <h2>Формула</h2>
     <div class="result-rune" id="formula">выбери руны</div>
+    <p class="meta" id="reading">Читается: —</p>
+    <input id="speak" type="text" placeholder="фл кл вс — собрать слогами">
     <p class="meta" id="gloss"></p>
     <p class="meta" id="components"></p>
     <p class="meta" id="material"></p>
@@ -497,6 +499,42 @@ function toggle(g, id) {
   render();
 }
 function find(gid, id) { return groups.find(g => g.id === gid).items.find(it => it[0] === id); }
+const runeSound = {"ᚠ":"ф","ᚢ":"у","ᚦ":"т","ᚨ":"а","ᚱ":"р","ᚲ":"к","ᚷ":"г","ᚹ":"в","ᚺ":"х","ᚾ":"н","ᛁ":"и","ᛃ":"й","ᛇ":"эй","ᛈ":"п","ᛉ":"з","ᛊ":"с","ᛏ":"т","ᛒ":"б","ᛖ":"е","ᛗ":"м","ᛚ":"л","ᛜ":"нг","ᛞ":"д","ᛟ":"о","ᚣ":"й","ᛪ":"кс"};
+const runePair = {"ᚢᚾ":"ун","ᚨᚾ":"ан","ᛏᚹ":"тв","ᚦᚱ":"тр","ᚠᛟ":"фо","ᛈᛖ":"пе","ᛊᛖ":"се","ᛒᛁ":"би","ᛖᛏ":"ет","ᚾᛁ":"ни","ᛗᛁ":"ми","ᛖᚲ":"ек"};
+function speak(runes) {
+  let out = "", i = 0;
+  while (i < runes.length) {
+    const pair = runes.slice(i, i + 2);
+    if (runePair[pair]) { out += runePair[pair]; i += 2; }
+    else { out += runeSound[runes[i]] || ""; i += 1; }
+  }
+  return out;
+}
+const spoken = {};
+groups.forEach(g => g.items.forEach(it => {
+  if (!it[1]) return;
+  const key = speak(it[1]);
+  if (!key) return;
+  (spoken[key] = spoken[key] || []).push({ g: g.id, id: it[0], multi: g.multi });
+}));
+function applySpeak(text) {
+  const bad = [];
+  const next = {};
+  groups.forEach(g => { next[g.id] = g.multi ? [] : null; });
+  text.trim().toLowerCase().split(/\s+/).filter(Boolean).forEach(token => {
+    const hits = spoken[token];
+    if (!hits) { bad.push(token); return; }
+    const hit = hits[0];
+    if (hit.multi) { if (!next[hit.g].includes(hit.id)) next[hit.g].push(hit.id); }
+    else next[hit.g] = hit.id;
+  });
+  groups.forEach(g => {
+    if (g.multi) state[g.id] = next[g.id];
+    else if (next[g.id]) state[g.id] = next[g.id];
+  });
+  document.getElementById("reading").dataset.bad = bad.join(" ");
+  render();
+}
 function levelOf(points) {
   if (points <= 0) return 0;
   if (points <= 3) return 1;
@@ -741,6 +779,11 @@ function render() {
     ? `${points} очков из ${state.caster >= 17 ? 6 : state.caster >= 11 ? 5 : state.caster >= 5 ? 4 : 3}${scale ? ", +" + scale + " к кубику" : ""}`
     : `${points} очков — ${level} круг`;
   document.getElementById("formula").textContent = parts.join(" ") || "—";
+  const said = parts.map(speak).filter(Boolean).join(" ");
+  const bad = document.getElementById("reading").dataset.bad;
+  document.getElementById("reading").textContent = "Читается: " + (said || "—") + (bad ? ". Не узнано: " + bad : "");
+  const speakBox = document.getElementById("speak");
+  if (document.activeElement !== speakBox) speakBox.value = said;
   document.getElementById("gloss").textContent = gloss.join(" · ");
   document.getElementById("components").textContent = "Компоненты: " + comps;
   document.getElementById("material").textContent = matText;
@@ -852,6 +895,7 @@ document.getElementById("save").onclick = () => {
   document.getElementById("saved").textContent = "Сохранено в этом браузере";
 };
 libraryLoad();
+document.getElementById("speak").addEventListener("change", e => applySpeak(e.target.value));
 document.getElementById("reset").onclick = () => { groups.forEach(g => state[g.id] = g.multi ? [] : g.items[0][0]); render(); };
 render();
 </script>
